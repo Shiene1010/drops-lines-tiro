@@ -1,220 +1,336 @@
 (function () {
-  const STORAGE_KEY = "drops_lines_tiro_20261208";
-  let appState = {
-    completedSteps: [],
-    checkedItems: []
+  const STORAGE_KEY = "drops_lines_tiro_brochure_v1";
+  let state = {
+    completedIds: [],
+    checkedIds: [],
+    activeIndex: 0
   };
 
-  // 1. 로컬 스토리지에서 상태 불러오기
   function loadState() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        appState.completedSteps = Array.isArray(parsed.completedSteps) ? parsed.completedSteps : [];
-        appState.checkedItems = Array.isArray(parsed.checkedItems) ? parsed.checkedItems : [];
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        state.completedIds = Array.isArray(parsed.completedIds) ? parsed.completedIds : [];
+        state.checkedIds = Array.isArray(parsed.checkedIds) ? parsed.checkedIds : [];
       }
     } catch (e) {
-      console.warn("상태 복원 실패, 초기 상태로 시작합니다.", e);
+      console.warn("로컬 상태 로드 실패:", e);
     }
   }
 
-  // 2. 로컬 스토리지에 상태 저장하기
   function saveState() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          completedIds: state.completedIds,
+          checkedIds: state.checkedIds
+        })
+      );
     } catch (e) {
-      console.warn("상태 저장 실패:", e);
+      console.warn("로컬 상태 저장 실패:", e);
     }
   }
 
-  // 3. 상단 헤더 & 진행률 렌더링
-  function renderHeader() {
-    const { meta } = window.TRIP_DATA;
+  // 상단 메타 & 진행률 업데이트
+  function updateTopStatus() {
+    const { meta, destinations } = window.TRIP_DATA;
     document.getElementById("meta-date").textContent = meta.date;
     document.getElementById("meta-title").textContent = meta.title;
-    document.getElementById("meta-route").textContent = meta.routeSummary;
+
+    const total = destinations.length;
+    const done = state.completedIds.length;
+    document.getElementById("progress-pill").textContent = `${done}/${total} 완료`;
   }
 
-  function updateProgress() {
-    const total = window.TRIP_DATA.timeline.length;
-    const done = appState.completedSteps.length;
-    const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+  // 고정 4단 미션 타임라인 탭 렌더링
+  function renderTabs() {
+    const tabsEl = document.getElementById("mission-tabs");
+    const dotsEl = document.getElementById("dot-indicators");
+    tabsEl.innerHTML = "";
+    dotsEl.innerHTML = "";
 
-    document.getElementById("progress-text").textContent = `${done} / ${total} 완료 (${percent}%)`;
-    document.getElementById("progress-fill").style.width = `${percent}%`;
+    window.TRIP_DATA.destinations.forEach((dest, idx) => {
+      const isDone = state.completedIds.includes(dest.id);
+      const isActive = idx === state.activeIndex;
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `m-tab ${isActive ? "active" : ""} ${isDone ? "done" : ""}`;
+      btn.innerHTML = `
+        <span class="m-tab-step">0${idx + 1} · ${dest.time.split("~")[0].trim()}</span>
+        <span class="m-tab-name">${dest.shortTab}</span>
+      `;
+      btn.addEventListener("click", () => goToSlide(idx));
+      tabsEl.appendChild(btn);
+
+      const dot = document.createElement("span");
+      dot.className = `dot-ind ${isActive ? "active" : ""}`;
+      dotsEl.appendChild(dot);
+    });
   }
 
-  // 4. 타임라인 카드 동적 렌더링
-  function renderTimeline() {
-    const container = document.getElementById("timeline-feed");
-    container.innerHTML = "";
+  // 포스터 브로슈어 슬라이드 렌더링
+  function renderPosters() {
+    const slider = document.getElementById("brochure-slider");
+    slider.innerHTML = "";
 
-    window.TRIP_DATA.timeline.forEach((step) => {
-      const isDone = appState.completedSteps.includes(step.id);
-      const node = document.createElement("article");
-      node.className = `timeline-node ${step.theme} ${isDone ? "is-done" : ""}`;
-      node.dataset.id = step.id;
+    window.TRIP_DATA.destinations.forEach((dest, idx) => {
+      const isDone = state.completedIds.includes(dest.id);
+      const slide = document.createElement("article");
+      slide.className = `poster-slide ${dest.theme} ${isDone ? "is-done" : ""}`;
+      slide.dataset.index = idx;
 
-      // 환승 스텝 HTML
-      let transitHTML = "";
-      if (step.transitSteps && step.transitSteps.length > 0) {
-        const items = step.transitSteps
-          .map(
-            (t) => `
-            <div class="t-step">
-              <span class="line-badge ${t.type}">${t.line}</span>
-              <span>${t.text}</span>
-            </div>`
-          )
-          .join("");
-        transitHTML = `<div class="transit-steps">${items}</div>`;
-      }
+      const summaryRows = dest.posterSummary
+        .map(
+          (row) => `
+          <div class="poster-summary-row">
+            <span class="poster-summary-label">${row.label}</span>
+            <span>${row.text}</span>
+          </div>`
+        )
+        .join("");
 
-      // 스펙 칩 HTML
-      let specsHTML = "";
-      if (step.specs && step.specs.length > 0) {
-        const pills = step.specs.map((s) => `<span class="spec-pill">${s}</span>`).join("");
-        specsHTML = `<div class="spec-list">${pills}</div>`;
-      }
-
-      // 티로 내부 아젠다 HTML
-      let agendaHTML = "";
-      if (step.agenda && step.agenda.length > 0) {
-        const rows = step.agenda
-          .map(
-            (a) => `
-            <div class="agenda-row">
-              <span class="agenda-time">${a.time}</span>
-              <span class="agenda-desc">${a.desc}</span>
-            </div>`
-          )
-          .join("");
-        agendaHTML = `<div class="agenda-list">${rows}</div>`;
-      }
-
-      // 티로 녹음/메모 미션 HTML
-      let tiroMemoHTML = "";
-      if (step.tiroMemo) {
-        tiroMemoHTML = `<div class="tiro-memo-box">${step.tiroMemo}</div>`;
-      }
-
-      // 팁 HTML
-      let tipHTML = step.tip ? `<div class="tip-box">${step.tip}</div>` : "";
-
-      // 하단 지도/웹 액션 버튼 HTML
-      let linksHTML = "";
-      if (step.links && step.links.length > 0) {
-        const btns = step.links
-          .map((l) => {
-            const btnClass =
-              l.type === "naver" ? "btn-naver" : l.type === "kakao" ? "btn-kakao" : "btn-web";
-            return `<a href="${l.url}" target="_blank" rel="noopener noreferrer" class="action-btn ${btnClass}">${l.label}</a>`;
-          })
-          .join("");
-        linksHTML = `<div class="action-bar">${btns}</div>`;
-      }
-
-      node.innerHTML = `
-        <div class="node-dot"></div>
-        <div class="card-box">
-          <div class="card-top">
-            <div class="card-meta-left">
-              <span class="card-time">${step.time}</span>
-              ${step.badgeText ? `<span class="${step.badgeClass}">${step.badgeText}</span>` : ""}
-            </div>
-            <button type="button" class="done-toggle" data-step-id="${step.id}">
-              ${isDone ? "완료됨 ✓" : "완료 체크"}
-            </button>
+      slide.innerHTML = `
+        <div class="poster-top">
+          <div>
+            <span class="poster-time">${dest.time}</span>
+            <span class="theme-badge">${dest.badgeText}</span>
           </div>
-          <h2 class="card-title">${step.title}</h2>
-          <p class="card-subtitle">${step.subtitle}</p>
-          ${specsHTML}
-          ${transitHTML}
-          ${agendaHTML}
-          ${tipHTML}
-          ${tiroMemoHTML}
-          ${linksHTML}
+          <button type="button" class="poster-done-btn" data-done-id="${dest.id}">
+            ${isDone ? "완료됨 ✓" : "미션 완료"}
+          </button>
+        </div>
+
+        <div class="poster-hero">
+          <p class="poster-kicker">${dest.kicker}</p>
+          <h2 class="poster-title">${dest.title}</h2>
+          <p class="poster-tagline">${dest.tagline}</p>
+          <div class="poster-summary-box">${summaryRows}</div>
+        </div>
+
+        <div class="poster-bottom">
+          <button type="button" class="open-detail-cta" data-detail-idx="${idx}">
+            자세히 보기 · 환승 및 미션 전문 ↗
+          </button>
         </div>
       `;
 
-      container.appendChild(node);
+      // 포스터 영역 클릭 시 디테일 뷰 열기 (완료 버튼 제외)
+      slide.addEventListener("click", (e) => {
+        if (e.target.closest(".poster-done-btn")) return;
+        openDetailModal(idx);
+      });
+
+      slider.appendChild(slide);
     });
   }
 
-  // 5. 하단 체크리스트 렌더링
+  // 슬라이드 이동 및 동기화
+  function goToSlide(index) {
+    const total = window.TRIP_DATA.destinations.length;
+    const targetIdx = Math.max(0, Math.min(index, total - 1));
+    state.activeIndex = targetIdx;
+
+    const slider = document.getElementById("brochure-slider");
+    const targetSlide = slider.children[targetIdx];
+    if (targetSlide) {
+      targetSlide.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+    renderTabs();
+  }
+
+  // 디테일 뷰 바텀시트 열기
+  function openDetailModal(idx) {
+    const dest = window.TRIP_DATA.destinations[idx];
+    if (!dest) return;
+
+    document.getElementById("detail-header-meta").innerHTML = `
+      <span class="sheet-eyebrow">${dest.time} · ${dest.address}</span>
+      <h2>${dest.title}</h2>
+    `;
+
+    const specsHTML = dest.specs.map((s) => `<span class="d-spec-chip">${s}</span>`).join("");
+
+    const transitHTML = dest.transitSteps
+      .map(
+        (t) => `
+        <div class="t-step">
+          <span class="line-badge ${t.type}">${t.line}</span>
+          <span>${t.text}</span>
+        </div>`
+      )
+      .join("");
+
+    let agendaHTML = "";
+    if (dest.agenda && dest.agenda.length > 0) {
+      const rows = dest.agenda
+        .map(
+          (a) => `
+          <div class="agenda-row">
+            <span class="agenda-time">${a.time}</span>
+            <span>${a.desc}</span>
+          </div>`
+        )
+        .join("");
+      agendaHTML = `
+        <div class="detail-section">
+          <h3>🗓️ 세부 프로그램 타임테이블</h3>
+          <div>${rows}</div>
+        </div>`;
+    }
+
+    document.getElementById("detail-body").innerHTML = `
+      <p style="font-size:13px; color:#475569; margin-bottom:10px; font-weight:600;">${dest.exhibition}</p>
+      <div class="detail-specs">${specsHTML}</div>
+
+      <div class="detail-section">
+        <h3>🚌 100% 대중교통 이동 · 환승 경로</h3>
+        ${transitHTML}
+      </div>
+
+      ${agendaHTML}
+
+      <div class="detail-section">
+        <h3>💡 현장 관람 및 이용 가이드</h3>
+        <div class="detail-tip">${dest.detailGuide}</div>
+      </div>
+
+      <div class="detail-section">
+        <h3>🎙️ 티로(Tiro) 기록 워크플로우</h3>
+        <div class="detail-tiro-box">${dest.tiroMission}</div>
+      </div>
+    `;
+
+    const footerBtns = dest.links
+      .map((l) => {
+        const cls = l.type === "naver" ? "btn-naver" : l.type === "kakao" ? "btn-kakao" : "btn-web";
+        return `<a href="${l.url}" target="_blank" rel="noopener noreferrer" class="action-btn ${cls}">${l.label}</a>`;
+      })
+      .join("");
+    document.getElementById("detail-footer").innerHTML = footerBtns;
+
+    openModal("detail-modal");
+  }
+
+  // 모달 열기 / 닫기 유틸
+  function openModal(id) {
+    document.getElementById(id).classList.add("is-open");
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove("is-open");
+  }
+
+  // 시작 모달 체크리스트 렌더링
   function renderChecklist() {
-    const container = document.getElementById("checklist-list");
-    container.innerHTML = "";
+    const listEl = document.getElementById("checklist-list");
+    listEl.innerHTML = "";
 
     window.TRIP_DATA.checklist.forEach((item) => {
-      const isChecked = appState.checkedItems.includes(item.id);
+      const checked = state.checkedIds.includes(item.id);
       const label = document.createElement("label");
-      label.className = `chk-item ${isChecked ? "checked" : ""}`;
+      label.className = `chk-item ${checked ? "checked" : ""}`;
       label.innerHTML = `
-        <input type="checkbox" data-chk-id="${item.id}" ${isChecked ? "checked" : ""} />
+        <input type="checkbox" data-chk-id="${item.id}" ${checked ? "checked" : ""} />
         <span class="chk-text"><span class="chk-tag">${item.tag}</span> ${item.text}</span>
       `;
-      container.appendChild(label);
+      listEl.appendChild(label);
     });
   }
 
-  // 6. 이벤트 바인딩 (이벤트 위임)
+  // 이벤트 바인딩
   function bindEvents() {
-    // 타임라인 완료 토글
-    document.getElementById("timeline-feed").addEventListener("click", (e) => {
-      const btn = e.target.closest(".done-toggle");
-      if (!btn) return;
+    // 스와이프 스크롤 감지 -> 상단 타임라인 탭 동기화
+    const slider = document.getElementById("brochure-slider");
+    let scrollTimer = null;
+    slider.addEventListener("scroll", () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const slideWidth = slider.clientWidth;
+        if (slideWidth > 0) {
+          const newIdx = Math.round(slider.scrollLeft / slideWidth);
+          if (newIdx !== state.activeIndex && newIdx >= 0 && newIdx < window.TRIP_DATA.destinations.length) {
+            state.activeIndex = newIdx;
+            renderTabs();
+          }
+        }
+      }, 60);
+    });
 
-      const stepId = btn.dataset.stepId;
-      const idx = appState.completedSteps.indexOf(stepId);
-      if (idx > -1) {
-        appState.completedSteps.splice(idx, 1);
-      } else {
-        appState.completedSteps.push(stepId);
-      }
+    // 좌우 화살표 버튼
+    document.getElementById("prev-slide").addEventListener("click", () => goToSlide(state.activeIndex - 1));
+    document.getElementById("next-slide").addEventListener("click", () => goToSlide(state.activeIndex + 1));
+
+    // 미션 완료 토글
+    slider.addEventListener("click", (e) => {
+      const btn = e.target.closest(".poster-done-btn");
+      if (!btn) return;
+      e.stopPropagation();
+
+      const id = btn.dataset.doneId;
+      const idx = state.completedIds.indexOf(id);
+      if (idx > -1) state.completedIds.splice(idx, 1);
+      else state.completedIds.push(id);
 
       saveState();
-      renderTimeline();
-      updateProgress();
+      updateTopStatus();
+      renderTabs();
+      renderPosters();
+    });
+
+    // 시작 모달 다시 열기 버튼
+    document.getElementById("open-start-modal").addEventListener("click", () => openModal("start-modal"));
+
+    // 모달 닫기 버튼 및 배경 터치
+    document.querySelectorAll("[data-close]").forEach((el) => {
+      el.addEventListener("click", () => closeModal(el.dataset.close));
+    });
+    document.querySelectorAll(".sheet-backdrop").forEach((backdrop) => {
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) closeModal(backdrop.id);
+      });
     });
 
     // 체크리스트 토글
     document.getElementById("checklist-list").addEventListener("change", (e) => {
       if (e.target.type !== "checkbox") return;
-
-      const chkId = e.target.dataset.chkId;
-      const idx = appState.checkedItems.indexOf(chkId);
-      if (e.target.checked && idx === -1) {
-        appState.checkedItems.push(chkId);
-      } else if (!e.target.checked && idx > -1) {
-        appState.checkedItems.splice(idx, 1);
-      }
+      const id = e.target.dataset.chkId;
+      const idx = state.checkedIds.indexOf(id);
+      if (e.target.checked && idx === -1) state.checkedIds.push(id);
+      else if (!e.target.checked && idx > -1) state.checkedIds.splice(idx, 1);
 
       saveState();
       renderChecklist();
     });
 
-    // 전체 초기화
+    // 체크 초기화
     document.getElementById("reset-btn").addEventListener("click", () => {
-      if (confirm("오늘의 완료 체크 및 준비물 기록을 모두 초기화할까요?")) {
-        appState = { completedSteps: [], checkedItems: [] };
+      if (confirm("체크리스트와 미션 완료 기록을 모두 초기화할까요?")) {
+        state.completedIds = [];
+        state.checkedIds = [];
         localStorage.removeItem(STORAGE_KEY);
-        renderTimeline();
+        updateTopStatus();
+        renderTabs();
+        renderPosters();
         renderChecklist();
-        updateProgress();
       }
     });
   }
 
-  // 앱 초기화 실행
   function init() {
     loadState();
-    renderHeader();
-    renderTimeline();
+    updateTopStatus();
+    renderTabs();
+    renderPosters();
     renderChecklist();
-    updateProgress();
     bindEvents();
+
+    // 앱 시작 시 아래에서 위로 사전점검 모달 슬라이드업 오픈
+    requestAnimationFrame(() => {
+      setTimeout(() => openModal("start-modal"), 120);
+    });
   }
 
   document.addEventListener("DOMContentLoaded", init);

@@ -3,53 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Drops, Lines & Tiro · 12.08 서울 트립</title>
-  <!-- 웹폰트 및 폴백 설정 -->
+  <title>Drops, Lines & Tiro · 12.08 브로슈어</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="themes.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <!-- 1. 상단 히어로 헤더 -->
-    <header class="trip-header" id="trip-header">
-      <div class="date-badge" id="meta-date"></div>
-      <h1 id="meta-title"></h1>
-      <p class="route-summary" id="meta-route"></p>
+  <div class="app-viewport">
+    <!-- 1. 상단 고정 미션 타임라인 헤더 -->
+    <header class="fixed-top-bar">
+      <div class="top-title-row">
+        <div>
+          <span class="mini-date" id="meta-date"></span>
+          <h1 class="app-logo" id="meta-title"></h1>
+        </div>
+        <div class="top-actions">
+          <span class="progress-pill" id="progress-pill">0/4 완료</span>
+          <button type="button" class="icon-modal-btn" id="open-start-modal">체크·왕복</button>
+        </div>
+      </div>
+
+      <!-- 고정 4개 행선지 타임라인 탭 -->
+      <nav class="mission-tabs" id="mission-tabs" aria-label="행선지 타임라인"></nav>
     </header>
 
-    <!-- 2. 스티키 진행률 트래커 -->
-    <div class="progress-sticky">
-      <div class="progress-info">
-        <span class="progress-label">여정 달성률</span>
-        <span class="progress-count" id="progress-text">0 / 9 완료 (0%)</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-    </div>
+    <!-- 2. 좌우 스와이프 포스터 브로슈어 트랙 -->
+    <main class="brochure-slider" id="brochure-slider"></main>
 
-    <!-- 3. 메인 타임라인 피드 (data.js에서 동적 렌더링) -->
-    <main class="timeline-feed" id="timeline-feed"></main>
-
-    <!-- 4. 출발 전 & 현장 필수 체크리스트 -->
-    <section class="checklist-section">
-      <div class="section-header">
-        <h2>📋 출발 전 & 현장 필수 체크리스트</h2>
-        <span class="save-hint">자동 저장됨</span>
-      </div>
-      <div class="checklist-list" id="checklist-list"></div>
-    </section>
-
-    <!-- 5. 푸터 -->
-    <footer class="trip-footer">
-      <p>drops-lines-tiro · 2026. 12. 08 (화)</p>
-      <button type="button" class="reset-btn" id="reset-btn">모든 체크 초기화</button>
+    <!-- 하단 페이지 인디케이터 -->
+    <footer class="poster-footer-nav">
+      <button type="button" class="nav-arrow" id="prev-slide" aria-label="이전 행선지">◀</button>
+      <div class="dot-indicators" id="dot-indicators"></div>
+      <button type="button" class="nav-arrow" id="next-slide" aria-label="다음 행선지">▶</button>
     </footer>
   </div>
 
-  <!-- 데이터 -> 로직 순서로 로드 -->
+  <!-- 3. 시작 시 아래에서 위로 올라오는 사전점검 & 왕복버스 모달 -->
+  <div class="sheet-backdrop" id="start-modal">
+    <div class="bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div>
+          <span class="sheet-eyebrow">2026. 12. 08 (화) · 출발 전 브리핑</span>
+          <h2>필수 체크리스트 & 용인 왕복 버스</h2>
+        </div>
+        <button type="button" class="sheet-close" data-close="start-modal">✕</button>
+      </div>
+      <div class="sheet-scroll-body">
+        <!-- 왕복 광역버스 요약 -->
+        <div class="roundtrip-box">
+          <h3>🚌 보라동 ↔ 서울 왕복 광역버스</h3>
+          <div class="rt-row">
+            <span class="line-badge bus-red">4101</span>
+            <p><strong>상행(07:50 출발):</strong> 보라동 ➔ 을지로입구·광교 하차 ➔ 3호선(경복궁역) ➔ 1711번 환승</p>
+          </div>
+          <div class="rt-row">
+            <span class="line-badge bus-red">5001-1B</span>
+            <p><strong>하행(21:30 이후):</strong> 역삼 fyi ➔ 신분당선강남역(중앙차로) 탑승 ➔ 보라동 복귀 (막차 24:00경)</p>
+          </div>
+        </div>
+
+        <!-- 필수 체크리스트 -->
+        <div class="modal-checklist-wrap">
+          <div class="chk-head">
+            <h3>📋 출발 전 & 현장 필수 체크</h3>
+            <button type="button" class="reset-mini-btn" id="reset-btn">초기화</button>
+          </div>
+          <div id="checklist-list"></div>
+        </div>
+      </div>
+      <div class="sheet-footer">
+        <button type="button" class="primary-confirm-btn" data-close="start-modal">브로슈어 시작하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 포스터 클릭 시 열리는 디테일 뷰 모달 (긴 상세 페이지) -->
+  <div class="sheet-backdrop" id="detail-modal">
+    <div class="bottom-sheet detail-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div id="detail-header-meta"></div>
+        <button type="button" class="sheet-close" data-close="detail-modal">✕</button>
+      </div>
+      <div class="sheet-scroll-body" id="detail-body"></div>
+      <div class="sheet-footer" id="detail-footer"></div>
+    </div>
+  </div>
+
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>

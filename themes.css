@@ -1,12 +1,8 @@
 /* =========================================
-   1. Base Reset & Design Tokens
+   1. Base Reset & 100dvh Viewport Shell
    ========================================= */
 :root {
-  --bg-page: #F4F2ED;
-  --text-dark: #1E1E1E;
-  --text-muted: #666666;
-  --border-light: #E2DFD7;
-  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.04);
+  --bg-dark: #121418;
   --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
   --font-serif: "Noto Serif KR", Georgia, serif;
 }
@@ -18,537 +14,639 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  background-color: var(--bg-page);
-  color: var(--text-dark);
+html, body {
+  height: 100%;
+  background: #0B0D10;
   font-family: var(--font-sans);
-  line-height: 1.55;
+  overflow: hidden;
   touch-action: manipulation;
 }
 
-.app-shell {
+.app-viewport {
   max-width: 480px;
+  height: 100dvh;
   margin: 0 auto;
-  min-height: 100vh;
-  background-color: var(--bg-page);
-  padding-bottom: 48px;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
 /* =========================================
-   2. Header & Sticky Progress
+   2. Fixed Top Mission Timeline
    ========================================= */
-.trip-header {
-  background: #1A1D24;
+.fixed-top-bar {
+  flex-shrink: 0;
+  background: #161920;
   color: #FFFFFF;
-  padding: 28px 20px 24px;
-  border-radius: 0 0 24px 24px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 20;
 }
 
-.date-badge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.14);
-  color: #E2E8F0;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 11px;
-  border-radius: 20px;
-  margin-bottom: 10px;
+.top-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-.trip-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin-bottom: 6px;
-}
-
-.route-summary {
-  font-size: 13px;
+.mini-date {
+  display: block;
+  font-size: 11px;
   color: #94A3B8;
+  font-weight: 600;
 }
 
-.progress-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(244, 242, 237, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 12px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+.app-logo {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
 }
 
-.progress-info {
+.top-actions {
   display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 700;
-  color: #475569;
-  margin-bottom: 6px;
-}
-
-.progress-track {
-  width: 100%;
-  height: 6px;
-  background: #DFDCD4;
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  background: #1A1D24;
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* =========================================
-   3. Timeline Track & Common Card Structure
-   ========================================= */
-.timeline-feed {
-  padding: 20px 18px 8px;
-}
-
-.timeline-node {
-  position: relative;
-  padding-left: 20px;
-  margin-bottom: 20px;
-  border-left: 2px solid #D5D1C8;
-  transition: opacity 0.25s ease;
-}
-
-.timeline-node:last-child {
-  border-left-color: transparent;
-  margin-bottom: 8px;
-}
-
-.node-dot {
-  position: absolute;
-  left: -7px;
-  top: 20px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #1A1D24;
-  border: 2px solid var(--bg-page);
-}
-
-.timeline-node.is-done {
-  opacity: 0.6;
-}
-
-.timeline-node.is-done .node-dot {
-  background: #94A3B8;
-}
-
-.card-box {
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: var(--shadow-card);
-  position: relative;
-  overflow: hidden;
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
-.card-meta-left {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+.progress-pill {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  color: #E2E8F0;
+  padding: 5px 9px;
+  border-radius: 99px;
+}
+
+.icon-modal-btn {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 6px 11px;
+  border-radius: 99px;
+  cursor: pointer;
+}
+
+/* 4-Step Horizontal Mission Timeline */
+.mission-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
 }
 
-.card-time {
-  font-size: 13px;
-  font-weight: 700;
+.m-tab {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  padding: 7px 6px;
+  color: #94A3B8;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.done-toggle {
-  border: 1.5px solid currentColor;
-  background: transparent;
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 11px;
+.m-tab.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #FFFFFF;
+  color: #FFFFFF;
+}
+
+.m-tab.done .m-tab-step::after {
+  content: " ✓";
+  color: #34D399;
+}
+
+.m-tab-step {
+  display: block;
+  font-size: 10px;
   font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
   opacity: 0.85;
 }
 
-.timeline-node.is-done .done-toggle {
-  background: #1A1D24;
-  border-color: #1A1D24;
+.m-tab-name {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* =========================================
+   3. Horizontal Swipe Brochure Slider
+   ========================================= */
+.brochure-slider {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 14px 16px 8px;
+  gap: 14px;
+}
+
+.brochure-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.poster-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  border-radius: 24px;
+  padding: 22px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.poster-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.poster-time {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.poster-done-btn {
+  border: 1.5px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 99px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.poster-slide.is-done .poster-done-btn {
+  background: #10B981;
+  border-color: #10B981;
   color: #FFFFFF;
 }
 
-.card-title {
-  font-size: 17px;
+.poster-hero {
+  margin: auto 0;
+  padding: 12px 0;
+}
+
+.poster-kicker {
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: -0.3px;
-  margin-bottom: 4px;
+  opacity: 0.78;
+  margin-bottom: 6px;
 }
 
-.card-subtitle {
-  font-size: 13px;
-  margin-bottom: 12px;
-  opacity: 0.8;
-}
-
-.spec-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.spec-pill {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-}
-
-.tip-box {
-  font-size: 12.5px;
-  padding: 10px 12px;
-  border-radius: 10px;
+.poster-title {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.6px;
   margin-bottom: 10px;
+}
+
+.poster-tagline {
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.88;
+  margin-bottom: 16px;
+}
+
+.poster-summary-box {
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 12.5px;
   line-height: 1.5;
 }
 
-.tiro-memo-box {
-  font-size: 12px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  font-weight: 600;
-}
-
-.action-bar {
+.poster-summary-row {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
+  margin-bottom: 5px;
+}
+.poster-summary-row:last-child { margin-bottom: 0; }
+.poster-summary-label { font-weight: 800; white-space: nowrap; }
+
+.poster-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.action-btn {
-  flex: 1;
-  height: 40px;
+.open-detail-cta {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  text-decoration: none;
-  font-size: 12.5px;
-  font-weight: 700;
-  transition: transform 0.1s ease;
+  gap: 6px;
 }
-
-.action-btn:active {
-  transform: scale(0.98);
-}
-
-.btn-naver { background: #03C75A; color: #FFFFFF; }
-.btn-kakao { background: #FEE500; color: #191919; }
-.btn-web   { background: #E2E8F0; color: #1E293B; }
 
 /* =========================================
-   4. THEME 1: 김창열 화가의 집
+   4. 4 Destination Poster Themes
    ========================================= */
-.theme-kim .node-dot { background: #3B82F6; }
-.theme-kim .card-box {
+/* ① 김창열 화가의 집 (물방울 & 황마 캔버스) */
+.theme-kim {
   background-color: #EFE9DC;
-  background-image: radial-gradient(rgba(120, 108, 90, 0.08) 1px, transparent 0);
+  background-image: radial-gradient(rgba(120, 108, 90, 0.1) 1px, transparent 0);
   background-size: 12px 12px;
   color: #23211E;
-  border: 1px solid #DFD6C5;
 }
-.theme-kim .card-time { color: #2563EB; }
-.theme-kim .card-title { font-family: var(--font-serif); font-size: 18px; }
-.theme-kim .drop-badge {
-  background: rgba(255, 255, 255, 0.72);
+.theme-kim .poster-time { color: #2563EB; }
+.theme-kim .poster-title { font-family: var(--font-serif); }
+.theme-kim .theme-badge {
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
   color: #1D4ED8;
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 99px;
 }
-.theme-kim .spec-pill { background: rgba(255, 255, 255, 0.65); color: #4A453D; }
-.theme-kim .tip-box { background: rgba(255, 255, 255, 0.6); border-left: 3px solid #3B82F6; }
-.theme-kim .tiro-memo-box { background: rgba(59, 130, 246, 0.1); color: #1E40AF; }
+.theme-kim .poster-summary-box { background: rgba(255, 255, 255, 0.65); }
+.theme-kim .open-detail-cta { background: #23211E; color: #FAF6EE; }
 
-/* =========================================
-   5. THEME 2: 우동카덴 연희점
-   ========================================= */
-.theme-udon .node-dot { background: #D64535; }
-.theme-udon .card-box {
-  background: #1B2432;
+/* ② 우동카덴 연희점 (딥 인디고 노렌 & 붉은 인장) */
+.theme-udon {
+  background: linear-gradient(160deg, #1B2432 0%, #111722 100%);
   color: #FAF6EE;
-  border: 1px solid #2D3A4E;
 }
-.theme-udon .card-time { color: #F59E0B; }
-.theme-udon .card-subtitle { color: #CBD5E1; }
-.theme-udon .stamp-badge {
+.theme-udon .poster-time { color: #F59E0B; }
+.theme-udon .theme-badge {
   border: 1.5px solid #EF4444;
   color: #FCA5A5;
-  background: rgba(214, 69, 53, 0.16);
+  background: rgba(214, 69, 53, 0.18);
   font-size: 11px;
   font-weight: 800;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: 4px;
-  letter-spacing: 0.3px;
 }
-.theme-udon .spec-pill { background: rgba(250, 246, 238, 0.1); color: #FDE68A; }
-.theme-udon .tip-box {
-  background: rgba(255, 255, 255, 0.06);
-  border-left: 3px solid #D64535;
-  color: #E2E8F0;
-}
-.theme-udon .tiro-memo-box { background: rgba(245, 158, 11, 0.14); color: #FDE68A; }
-.theme-udon .btn-web { background: #334155; color: #F8FAFC; }
+.theme-udon .poster-summary-box { background: rgba(255, 255, 255, 0.08); }
+.theme-udon .open-detail-cta { background: #D64535; color: #FFFFFF; }
 
-/* =========================================
-   6. THEME 3: 박서보미술관
-   ========================================= */
-.theme-park .node-dot { background: #B83B2A; }
-.theme-park .card-box {
+/* ③ 박서보미술관 (한지 순백 & 묘법 스트라이프) */
+.theme-park {
   background: #F9F8F5;
   color: #1C1C1C;
-  border: 1px solid #E4E2DC;
-  padding-left: 24px;
+  padding-left: 28px;
 }
-.theme-park .card-box::before {
+.theme-park::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 7px;
+  left: 0; top: 0; bottom: 0;
+  width: 10px;
   background: repeating-linear-gradient(
     to bottom,
-    #B83B2A 0px,
-    #B83B2A 2px,
-    #EAE6DF 2px,
-    #EAE6DF 5px
+    #B83B2A 0px, #B83B2A 3px,
+    #EAE6DF 3px, #EAE6DF 7px
   );
 }
-.theme-park .card-time { color: #B83B2A; }
-.theme-park .ecriture-badge {
+.theme-park .poster-time { color: #B83B2A; }
+.theme-park .theme-badge {
   background: #FCECE9;
   color: #B83B2A;
-  border: 1px solid #F5C6BE;
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
 }
-.theme-park .spec-pill { background: #EFECE6; color: #3F3D39; }
-.theme-park .tip-box { background: #F2EFE9; border-left: 3px solid #B83B2A; }
-.theme-park .tiro-memo-box {
-  background: #FEF2F2;
-  border: 1px solid #FECACA;
-  color: #991B1B;
-}
+.theme-park .poster-summary-box { background: #EFECE6; }
+.theme-park .open-detail-cta { background: #B83B2A; color: #FFFFFF; }
 
-/* =========================================
-   7. THEME 4: 티로 행사
-   ========================================= */
-.theme-tiro .node-dot { background: #EF4444; }
-.theme-tiro .card-box {
-  background: #FFFFFF;
+/* ④ Tiro After Meeting (실시간 녹음 & 테크) */
+.theme-tiro {
+  background: linear-gradient(165deg, #FFFFFF 0%, #EFF6FF 100%);
   color: #0F172A;
-  border: 1px solid #CBD5E1;
-  border-top: 4px solid #2563EB;
+  border-top: 6px solid #2563EB;
 }
-.theme-tiro .card-time { color: #2563EB; }
-.rec-pill {
+.theme-tiro .poster-time { color: #2563EB; }
+.theme-tiro .theme-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   background: #FEF2F2;
   color: #DC2626;
-  border: 1px solid #FECACA;
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 99px;
 }
 .rec-dot {
-  width: 7px;
-  height: 7px;
+  width: 7px; height: 7px;
   border-radius: 50%;
   background: #EF4444;
-  animation: pulseRec 1.4s infinite;
+  animation: pulseRec 1.3s infinite;
 }
 @keyframes pulseRec {
-  0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(0.85); }
-  100% { opacity: 1; transform: scale(1); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
-.theme-tiro .spec-pill { background: #EFF6FF; color: #1D4ED8; }
-.theme-tiro .tip-box { background: #F8FAFC; border-left: 3px solid #2563EB; color: #334155; }
-
-.agenda-list {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
-}
-.agenda-row {
-  display: flex;
-  gap: 10px;
-  font-size: 12px;
-  padding: 5px 0;
-  border-bottom: 1px dashed #E2E8F0;
-}
-.agenda-row:last-child { border-bottom: none; }
-.agenda-time { font-weight: 700; color: #2563EB; min-width: 42px; }
-.agenda-desc { color: #1E293B; }
+.theme-tiro .poster-summary-box { background: #FFFFFF; border: 1px solid #DBEAFE; }
+.theme-tiro .open-detail-cta { background: #2563EB; color: #FFFFFF; }
 
 /* =========================================
-   8. THEME 5: 대중교통 & 자유시간
+   5. Bottom Slide Controls
    ========================================= */
-.theme-transit .node-dot { background: #64748B; }
-.theme-transit .card-box {
-  background: #F1F3F5;
-  color: #212529;
-  border: 1.5px dashed #CBD5E1;
-  box-shadow: none;
+.poster-footer-nav {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 24px 14px;
+  color: #94A3B8;
 }
-.theme-transit .card-time { color: #475569; }
-.transit-badge {
-  background: #E2E8F0;
-  color: #334155;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 6px;
+
+.nav-arrow {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #FFFFFF;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
 }
-.transit-steps {
+
+.dot-indicators {
+  display: flex;
+  gap: 8px;
+}
+
+.dot-ind {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.25);
+  transition: all 0.25s ease;
+}
+
+.dot-ind.active {
+  width: 22px;
+  background: #FFFFFF;
+}
+
+/* =========================================
+   6. Bottom-Up Slide Modal (Start & Detail)
+   ========================================= */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.sheet-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bottom-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 88dvh;
+  background: #FFFFFF;
+  color: #1E293B;
+  border-radius: 26px 26px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-bottom: 10px;
+  transform: translateY(100%);
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.sheet-backdrop.is-open .bottom-sheet {
+  transform: translateY(0);
+}
+
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #CBD5E1;
+  border-radius: 99px;
+  margin: 10px auto 4px;
+  flex-shrink: 0;
+}
+
+.sheet-header {
+  padding: 10px 20px 14px;
+  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.sheet-eyebrow {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2563EB;
+}
+
+.sheet-header h2 {
+  font-size: 19px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.sheet-close {
+  background: #F1F5F9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+}
+
+.sheet-scroll-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sheet-footer {
+  padding: 12px 20px 20px;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.primary-confirm-btn {
+width: 100%;
+height: 46px;
+background: #161920;
+color: #FFFFFF;
+border: none;
+border-radius: 12px;
+font-size: 14px;
+font-weight: 700;
+cursor: pointer;
+}
+/* Start Modal Components */
+.roundtrip-box {
+background: #F8FAFC;
+border: 1px solid #E2E8F0;
+border-radius: 14px;
+padding: 14px;
+margin-bottom: 18px;
+}
+.roundtrip-box h3, .chk-head h3 {
+font-size: 14px;
+font-weight: 800;
+margin-bottom: 10px;
+}
+.rt-row {
+display: flex;
+align-items: flex-start;
+gap: 8px;
+font-size: 12.5px;
+margin-bottom: 8px;
+line-height: 1.45;
+}
+.rt-row:last-child { margin-bottom: 0; }
+.chk-head {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.reset-mini-btn {
+background: none;
+border: 1px solid #CBD5E1;
+font-size: 11px;
+color: #64748B;
+padding: 3px 8px;
+border-radius: 6px;
+cursor: pointer;
+}
+.chk-item {
+display: flex;
+align-items: flex-start;
+gap: 10px;
+padding: 10px 0;
+border-bottom: 1px solid #F1F5F9;
+font-size: 13px;
+cursor: pointer;
+}
+.chk-item input { width: 17px; height: 17px; margin-top: 2px; accent-color: #161920; }
+.chk-tag { font-size: 11px; font-weight: 700; background: #EFF6FF; color: #1D4ED8; padding: 1px 6px; border-radius: 4px; margin-right: 4px; }
+.chk-item.checked .chk-text { text-decoration: line-through; color: #94A3B8; }
+/* Detail View Components */
+.detail-section {
+margin-bottom: 20px;
+}
+.detail-section h3 {
+font-size: 14px;
+font-weight: 800;
+color: #0F172A;
+margin-bottom: 8px;
+}
+.detail-specs {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+margin-bottom: 14px;
+}
+.d-spec-chip {
+background: #F1F5F9;
+color: #334155;
+font-size: 12px;
+font-weight: 700;
+padding: 4px 10px;
+border-radius: 8px;
 }
 .t-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 12.5px;
-  background: #FFFFFF;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #E2E8F0;
+display: flex;
+align-items: flex-start;
+gap: 8px;
+background: #F8FAFC;
+border: 1px solid #E2E8F0;
+padding: 10px 12px;
+border-radius: 10px;
+font-size: 13px;
+margin-bottom: 7px;
 }
 .line-badge {
-  font-size: 11px;
-  font-weight: 800;
-  color: #FFFFFF;
-  padding: 2px 6px;
-  border-radius: 5px;
-  white-space: nowrap;
-  margin-top: 1px;
+font-size: 11px;
+font-weight: 800;
+color: #FFFFFF;
+padding: 2px 7px;
+border-radius: 5px;
+white-space: nowrap;
 }
 .bus-red   { background: #D9381E; }
 .bus-green { background: #3B9E47; }
 .sub-2     { background: #00A84D; }
 .sub-3     { background: #EF7C1C; }
 .walk-tag  { background: #64748B; }
-.theme-transit .tip-box { background: #FFFFFF; border-left: 3px solid #64748B; }
-.theme-transit .tiro-memo-box { background: #E0F2FE; color: #0369A1; }
-
-.theme-free .node-dot { background: #8B5CF6; }
-.theme-free .card-box {
-  background: #FAF8FF;
-  border: 1px solid #E9D5FF;
-  color: #2E1065;
+.detail-tip {
+background: #F8FAFC;
+border-left: 3.5px solid #2563EB;
+padding: 12px 14px;
+border-radius: 8px;
+font-size: 13px;
+line-height: 1.6;
 }
-.theme-free .card-time { color: #7C3AED; }
-.theme-free .tip-box { background: #F3E8FF; border-left: 3px solid #8B5CF6; }
-
-/* =========================================
-   9. Checklist & Footer
-   ========================================= */
-.checklist-section {
-  margin: 16px 18px 0;
-  background: #FFFFFF;
-  border-radius: 18px;
-  padding: 18px;
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-card);
+.detail-tiro-box {
+background: #FEF2F2;
+border: 1px solid #FECACA;
+color: #991B1B;
+padding: 12px 14px;
+border-radius: 12px;
+font-size: 13px;
+font-weight: 600;
+line-height: 1.55;
 }
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+.agenda-row {
+display: flex;
+gap: 10px;
+padding: 8px 0;
+border-bottom: 1px dashed #E2E8F0;
+font-size: 13px;
 }
-.section-header h2 {
-  font-size: 15px;
-  font-weight: 700;
+.agenda-time { font-weight: 800; color: #2563EB; min-width: 45px; }
+.action-btn {
+flex: 1;
+height: 44px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 12px;
+text-decoration: none;
+font-size: 13px;
+font-weight: 800;
 }
-.save-hint {
-  font-size: 11px;
-  color: #10B981;
-  font-weight: 600;
-}
-.chk-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid #F1F5F9;
-  font-size: 13px;
-  cursor: pointer;
-}
-.chk-item:last-child {
-  border-bottom: none;
-}
-.chk-item input[type="checkbox"] {
-  width: 17px;
-  height: 17px;
-  margin-top: 2px;
-  accent-color: #1A1D24;
-}
-.chk-tag {
-  font-size: 11px;
-  font-weight: 700;
-  background: #F1F5F9;
-  color: #475569;
-  padding: 1px 6px;
-  border-radius: 4px;
-  margin-right: 4px;
-}
-.chk-item.checked .chk-text {
-  text-decoration: line-through;
-  color: #94A3B8;
-}
-.trip-footer {
-  text-align: center;
-  padding: 28px 20px 10px;
-  font-size: 12px;
-  color: #94A3B8;
-}
-.reset-btn {
-  margin-top: 10px;
-  background: none;
-  border: 1px solid #CBD5E1;
-  color: #64748B;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
+.btn-naver { background: #03C75A; color: #FFFFFF; }
+.btn-kakao { background: #FEE500; color: #191919; }
+.btn-web   { background: #E2E8F0; color: #1E293B; }
