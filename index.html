@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Drops, Lines & Tiro · 12.08 서울 트립</title>
+  <!-- 웹폰트 및 폴백 설정 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="themes.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- 1. 상단 히어로 헤더 -->
+    <header class="trip-header" id="trip-header">
+      <div class="date-badge" id="meta-date"></div>
+      <h1 id="meta-title"></h1>
+      <p class="route-summary" id="meta-route"></p>
+    </header>
+
+    <!-- 2. 스티키 진행률 트래커 -->
+    <div class="progress-sticky">
+      <div class="progress-info">
+        <span class="progress-label">여정 달성률</span>
+        <span class="progress-count" id="progress-text">0 / 9 완료 (0%)</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- 3. 메인 타임라인 피드 (data.js에서 동적 렌더링) -->
+    <main class="timeline-feed" id="timeline-feed"></main>
+
+    <!-- 4. 출발 전 & 현장 필수 체크리스트 -->
+    <section class="checklist-section">
+      <div class="section-header">
+        <h2>📋 출발 전 & 현장 필수 체크리스트</h2>
+        <span class="save-hint">자동 저장됨</span>
+      </div>
+      <div class="checklist-list" id="checklist-list"></div>
+    </section>
+
+    <!-- 5. 푸터 -->
+    <footer class="trip-footer">
+      <p>drops-lines-tiro · 2026. 12. 08 (화)</p>
+      <button type="button" class="reset-btn" id="reset-btn">모든 체크 초기화</button>
+    </footer>
+  </div>
+
+  <!-- 데이터 -> 로직 순서로 로드 -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
