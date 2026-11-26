@@ -2,6 +2,12 @@
 
 2026년 12월 8일 서울 당일치기 여정과 티로 오프라인 모임을 하나의 모바일 웹 브로슈어로 안내하는 정적 웹앱입니다.
 
+## 앱 스크린샷
+
+| 김창열 화가의 집 | 우동카덴 연희점 | 박서보미술관 | Tiro After Meeting |
+| --- | --- | --- | --- |
+| ![김창열 화가의 집 화면](assets/dropsLinesTiro-20261126-1.png) | ![우동카덴 연희점 화면](assets/dropsLinesTiro-20261126-2.png) | ![박서보미술관 화면](assets/dropsLinesTiro-20261126-3.png) | ![Tiro After Meeting 화면](assets/dropsLinesTiro-20261126-4.png) |
+
 ## 여정 경로
 
 `보라동 → 평창동 → 연희동 → 역삼동 → 보라동`
